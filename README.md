@@ -1,9 +1,9 @@
 # Setup
 
-Create a `.env` file using `.env.example` as model:
+Create a `.env` file inside `backend` folder using `.env.example` as model:
 
 ```
-$ cp .env.example .env
+$ cp backend/.env.example backend/.env
 ```
 
 Build docker images:
@@ -12,10 +12,16 @@ Build docker images:
 $ docker-compose build
 ```
 
+Install frontend deps
+
+```
+$ docker-compose run --rm app bun install --frozen-lockfile
+```
+
 Run backend setup:
 
 ```
-$ docker-compose run --rm api python db_setup.py
+$ docker-compose run --rm api poetry run python db_setup.py
 ```
 
 Run database migrations:
@@ -31,6 +37,8 @@ $ docker-compose up
 ```
 
 The App should be available at [http://localhost:8888](http://localhost:8888)
+
+The API doc should be available at [http://localhost:8000/docs](http://localhost:8000/docs)
 
 - Processing a ~100MB file in less than 60 seconds :white_check_mark: (Actually around 17s)
 
@@ -52,7 +60,9 @@ You can check some movement in celery container log. You can also check the e-ma
 
 # TODO
  - Tests
+ - Front Docs
  - Move some code outside from component
  - Some data validation
+ - Pagination
  - Handle some edge cases
  - Actualy generate boletos

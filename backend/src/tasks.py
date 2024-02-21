@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime
 from typing import Dict
 from src.models.boleto import Boleto
@@ -24,9 +25,9 @@ def process_boletos():
 
 
 @celery.task
-async def send_boleto_mail(boleto: Dict[str, int | str]):
+def send_boleto_mail(boleto: Dict[str, int | str]):
   file = BoletoService.generate_boleto_attachment(boleto)
-  ok = await BoletoService.send_boleto_email(boleto, file)
+  ok = asyncio.run(BoletoService.send_boleto_email(boleto, file))
 
   if ok:
     from src.config.db import Session
