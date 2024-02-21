@@ -1,14 +1,13 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
+import React from "react";
+import ReactDOM from "react-dom/client";
+import "./i18n";
+import { RouterProvider } from "react-router-dom";
 
-import * as Components from './components'
+import { router } from "./routes";
 
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
+
+ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <Components.NoMatch />
-      {/* Your Job here */}
-    </BrowserRouter>
+    <RouterProvider router={router} />
   </React.StrictMode>,
-)
+);

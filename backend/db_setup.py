@@ -1,8 +1,5 @@
-import psycopg2
-
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.engine import URL
-from sqlalchemy.orm import sessionmaker
 
 from src.config.settings import POSTGRESQL_DB, POSTGRESQL_HOST, POSTGRESQL_PORT, POSTGRESQL_USER, POSTGRESQL_PASS
 
@@ -11,10 +8,13 @@ url = URL.create(
     username=POSTGRESQL_USER,
     password=POSTGRESQL_PASS,
     port=POSTGRESQL_PORT,
-    host=POSTGRESQL_HOST,
-    database=POSTGRESQL_DB
+    host=POSTGRESQL_HOST
 )
 
 engine = create_engine(url)
 
-Session = sessionmaker(bind=engine)
+conn = engine.connect()
+
+conn.execute(text("commit"))
+conn.execute(text(f"CREATE DATABASE {POSTGRESQL_DB}"))
+conn.close()

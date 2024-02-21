@@ -11,4 +11,4 @@ RUN poetry install
 COPY . ./
 
 EXPOSE 8000/tcp
-CMD [ "poetry", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--reload" ]
+CMD [ "poetry", "run", "uvicorn", "src.server:app", "--host", "0.0.0.0", "--reload" ]

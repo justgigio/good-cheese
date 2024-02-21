@@ -4,6 +4,8 @@ services:
     image: postgres:16.1-alpine
     volumes:
       - good_cheese_postgresql:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -23,7 +25,7 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./backend:/app
-    command: poetry run uvicorn main:app --host=0.0.0.0 --reload
+    command: poetry run uvicorn src.server:app --host=0.0.0.0 --reload
     depends_on:
       - db
       - redis
@@ -44,7 +46,7 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./backend:/app
-    command: poetry run celery -A src.tasks worker -l warning -E
+    command: poetry run celery -A src.tasks worker -l debug -E
     depends_on:
       - redis
     links:
@@ -66,7 +68,11 @@ services:
       - "8888:8888"
     environment:
       BROWSER: /dev/null
-  
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    ports:
+      - "8025:8025"
+      - "1025:1025"
 
 volumes:
   good_cheese_postgresql:

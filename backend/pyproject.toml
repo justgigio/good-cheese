@@ -14,6 +14,9 @@ sqlalchemy = "^2.0.27"
 psycopg2 = "^2.9.9"
 python-decouple = "^3.8"
 redis = "^5.0.1"
+python-multipart = "^0.0.9"
+alembic = "^1.13.1"
+fastapi-mail = "^1.4.1"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -22,3 +25,6 @@ mypy = "^1.8.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[[tool.mypy.overrides]]
+ignore_missing_imports = true

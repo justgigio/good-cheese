@@ -1,17 +1,24 @@
 import { ReactNode } from "react";
 
-enum FileActionType {}
+export enum FileActionType {
+  INPUT_CHANGE = "INPUT_CHANGE",
+  UPLOAD_STARTED = "UPLOAD_STARTED",
+  UPLOAD_FINISHED = "UPLOAD_FINISHED",
+  UPLOAD_ERROR = "UPLOAD_ERROR",
+  FETCH_STARTED = "FETCH_STARTED",
+  FETCH_FINISHED = "FETCH_FINISHED"
+}
 
 type ReducerAction<T, P> = {
   type: T;
   payload?: Partial<P>;
 };
 
-
 type FileContextState = {
   isLoading: boolean;
   file: File | null;
-  fileList: File[]; // & {} You can add more information about the challenge inside this type
+  fileList: UploadedFile[]; // & {} You can add more information about the challenge inside this type
+  uploadedFile: UploadedFile | null;
 };
 
 type FileAction = ReducerAction<
@@ -28,11 +35,29 @@ type FileContextType = {
 
 type FileProviderProps = { children: ReactNode };
 
+type FileStatus = {
+  id: number
+  size: number
+  inserted: number
+  completed: boolean
+  percent: number
+}
+
+type UploadedFile = {
+  id: number
+  name: string
+  checksum: string
+  size: number
+  uploaded_at: Date
+  processed_at: Date
+}
+
 export type {
-  FileActionType,
   FileContextState,
   FileAction,
   FileDispatch,
   FileContextType,
   FileProviderProps,
+  FileStatus,
+  UploadedFile,
 }

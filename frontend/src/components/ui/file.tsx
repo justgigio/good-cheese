@@ -1,36 +1,11 @@
-import { ReactNode, createContext, useContext, useReducer } from "react";
+import { FileAction, FileActionType, FileContextState, FileContextType, FileProviderProps, UploadedFile } from "@/types";
+import { createContext, useContext, useReducer } from "react";
 
-enum FileActionType { }
-
-type ReducerAction<T, P> = {
-  type: T;
-  payload?: Partial<P>;
-};
-
-
-type FileContextState = {
-  isLoading: boolean;
-  file: File | null;
-  fileList: File[]; // & {} You can add more information about the challenge inside this type
-};
-
-type FileAction = ReducerAction<
-  FileActionType,
-  Partial<FileContextState>
->;
-
-type FileDispatch = ({ type, payload }: FileAction) => void;
-
-type FileContextType = {
-  state: FileContextState;
-  dispatch: FileDispatch;
-};
-
-type FileProviderProps = { children: ReactNode };
-
-export const FileContextInitialValues: Partial<FileContextState> = {
-  file: {} as File,
+const FileContextInitialValues: FileContextState = {
+  file: null,
   isLoading: false,
+  fileList: [],
+  uploadedFile: null
 };
 
 const FileContext = createContext({} as FileContextType);
@@ -40,16 +15,55 @@ const FileReducer = (
   action: FileAction,
 ): FileContextState => {
   switch (action.type) {
+    case FileActionType.INPUT_CHANGE:
+      if (action.payload?.file !== undefined) {
+        return {
+          ...state,
+          file: action.payload.file
+        }
+      };
+      return {
+        ...state,
+        file: null
+      };
+    case FileActionType.UPLOAD_STARTED:
+      return {
+        ...state,
+        isLoading: true
+      };
+    case FileActionType.UPLOAD_FINISHED:
+      return {
+        ...state,
+        file: null,
+        isLoading: false,
+        fileList: [...state.fileList, action.payload?.uploadedFile as UploadedFile]
+      };
+    case FileActionType.UPLOAD_ERROR:
+      return {
+        ...FileContextInitialValues,
+        fileList: state.fileList
+      };
+    case FileActionType.FETCH_STARTED:
+      return {
+        ...state,
+        isLoading: true
+      };
+    case FileActionType.FETCH_FINISHED:
+      return {
+        ...state,
+        isLoading: false,
+        fileList: action.payload?.fileList || []
+      };
     default: {
       throw new Error(`Unhandled action type: ${action.type}`);
     }
   }
 };
 
-const FileProvider = ({ children }: FileProviderProps) => {
+export const FileProvider = ({ children }: FileProviderProps) => {
   const [state, dispatch] = useReducer(
     FileReducer,
-    FileContextInitialValues as FileContextState,
+    FileContextInitialValues,
   );
 
   return (
@@ -59,7 +73,7 @@ const FileProvider = ({ children }: FileProviderProps) => {
   );
 };
 
-const useFileContext = () => {
+export const useFileContext = () => {
   const context = useContext(FileContext);
 
   if (context === undefined)
@@ -67,4 +81,3 @@ const useFileContext = () => {
 
   return context;
 };
-
