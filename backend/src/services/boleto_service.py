@@ -1,12 +1,17 @@
+import asyncio
+import os
 import hashlib
 
 from datetime import datetime, timedelta
 from io import StringIO
 from json import dumps
 from time import sleep, time
-from typing import Dict, List
+from typing import Callable, Dict, List, Tuple
+from queue import Queue
+from threading import Thread
+
 from fastapi import HTTPException
-from sqlalchemy import and_
+from sqlalchemy import Row, and_
 
 from src.models import BoletoFile, Boleto
 from src.config.db import Session, engine
@@ -16,6 +21,9 @@ class BoletoService:
 
   @staticmethod
   def create_boleto_file(filename: str, file_contents: bytes) -> BoletoFile:
+    t0 = time()
+    print("=" * 50)
+    print("Starting Creating File row...")
     boleto_file = BoletoFile()
     boleto_file.name = filename
     boleto_file.uploaded_at = datetime.now()
@@ -30,13 +38,17 @@ class BoletoService:
     session.commit()
     session.refresh(boleto_file)
 
+    t1 = time()
+    print("=" * 50)
+    print(f"File row created... {t1 - t0}s")
+
     return boleto_file
 
   @staticmethod
   def upload_boleto(boleto_file: BoletoFile, file_contents: bytes):
     t0 = time()
     print("=" * 50)
-    print("Starting...")
+    print("Starting Upload...")
 
     columns = ('name', 'government_id', 'email', 'debt_amount', 'debt_due_date', 'debt_id', 'boleto_file_id')
 
@@ -46,23 +58,58 @@ class BoletoService:
 
     file_chunks = [file_lines[pos:pos + chunk_size] for pos in range(0, len(file_lines), chunk_size)]
 
+    t1 = time()
+    print("=" * 50)
+    print(f"File loaded... {t1-t0}s")
+
+    def worker(q):
+      while True:
+        item = q.get()
+        if item is None:
+          break
+        tw = time()
+        item()
+        print("-" * 50)
+        print(f"Worker inserted in {time() - tw}s")
+        q.task_done()
+
+    qu: Queue[function | None] = Queue()
+
+    for chunk in file_chunks:
+      qu.put_nowait(lambda: BoletoService._insert_file_chunck_on_db(chunk, columns, boleto_file.id))
+
+    threads = []
+    for _ in range(os.cpu_count() or 1):
+      t = Thread(target=worker, args=(qu,))
+      t.start()
+      threads.append(t)
+
+    qu.join()
+
+    for _ in threads:
+        qu.put(None)
+    for t in threads:
+        t.join()
+
+    t2 = time()
+    print("=" * 50)
+    print(f"Inserted... {t2 - t0}s")
+    print(f"Total {t2 - t0}s")
+
+  @staticmethod
+  def _insert_file_chunck_on_db(file_chunk: List[str], columns: Tuple, boleto_file_id: int):
     conn = engine.raw_connection()
     cursor = conn.cursor()
+
+    file_contents_str = f",{boleto_file_id}\n".join(file_chunk)
+      
+    buffer = StringIO(f"{file_contents_str},{boleto_file_id}")
     
-    for chunk in file_chunks:
-      file_contents_str = f",{boleto_file.id}\n".join(chunk)
-      
-      buffer = StringIO(f"{file_contents_str},{boleto_file.id}")
-      
-      cursor.copy_from(buffer, 'boletos', sep=',', columns=columns)
-      conn.commit()
+    cursor.copy_from(buffer, 'boletos', sep=',', columns=columns)
+    conn.commit()
 
     cursor.close()
     conn.close()
-
-    t1 = time()
-    print("=" * 50)
-    print(f"Total {t1 - t0}s")
 
   @staticmethod
   def check_upload_boleto(boleto_file_id: int) -> Dict[str, bool | int | float]:
@@ -98,14 +145,24 @@ class BoletoService:
     return [boleto_file.to_dict() for boleto_file in boleto_files]
 
   @staticmethod
-  def get_boletos_to_send() -> List[Boleto]:
+  def get_boletos_to_send() -> List[Row[Tuple]]:
+    t0 = time()
     session = Session()
 
     today = datetime.now()
     due_date_offset = today + timedelta(days=10)
 
     condition = and_(Boleto.processed_at == None, Boleto.debt_due_date < due_date_offset)
-    boletos = session.query(Boleto).filter(condition).all()
+    boletos = session.query(
+      Boleto.id,
+      Boleto.name,
+      Boleto.government_id,
+      Boleto.email,
+      Boleto.debt_amount,
+      Boleto.debt_due_date
+    ).filter(condition).all()
+
+    print(f"Queried boletos in {time() - t0}s")
 
     return boletos
 
@@ -116,7 +173,7 @@ class BoletoService:
     return dumps(boleto).encode('utf-8')
 
   @staticmethod
-  async def send_boleto_email(boleto: Dict[str, int | str], boleto_attachment: bytes) -> bool:
+  def send_boleto_email(boleto: Dict[str, int | str], boleto_attachment: bytes, callback: Callable):
     from fastapi_mail import ConnectionConfig, FastMail, MessageSchema, MessageType
 
     conf = ConnectionConfig(
@@ -150,10 +207,6 @@ class BoletoService:
       subtype=MessageType.html
     )
 
-    try:
-      fm = FastMail(conf)
-      await fm.send_message(message)
-    except:
-      return False
-
-    return True
+    fm = FastMail(conf)
+    asyncio.run(fm.send_message(message))
+    callback()

@@ -6,6 +6,7 @@ services:
       - good_cheese_postgresql:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    command: postgres -d 5
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -44,7 +45,7 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./backend:/app
-    command: poetry run celery -A src.tasks worker -l debug -E
+    command: poetry run celery -A src.tasks worker -l debug
     depends_on:
       - api
       - db

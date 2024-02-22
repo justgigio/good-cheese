@@ -1,7 +1,5 @@
-import asyncio
 from datetime import datetime
 from typing import Dict
-from src.models.boleto import Boleto
 from src.services.boleto_service import BoletoService
 from src.config.settings import REDIS_SERVER_URI
 
@@ -18,18 +16,20 @@ def setup_periodic_tasks(sender, **kwargs):
 
 @celery.task
 def process_boletos():
-  boletos = BoletoService.get_boletos_to_send()
+  boletos_tuple = BoletoService.get_boletos_to_send()
 
-  for boleto in boletos:
-    send_boleto_mail.apply_async([boleto.to_dict()])
+  for boleto_tuple in boletos_tuple[:10000]:
+    boleto_dict = dict(zip(['id','name','government_id', 'email', 'debt_amount', 'debt_due_date'], boleto_tuple))
+    boleto_dict['debt_due_date'] = boleto_dict['debt_due_date'].isoformat()
+    # send_boleto_mail.apply_async([boleto_dict])
 
 
 @celery.task
 def send_boleto_mail(boleto: Dict[str, int | str]):
   file = BoletoService.generate_boleto_attachment(boleto)
-  ok = asyncio.run(BoletoService.send_boleto_email(boleto, file))
 
-  if ok:
+  def update_boleto_processed():
+    from src.models.boleto import Boleto
     from src.config.db import Session
 
     session = Session()
@@ -42,3 +42,5 @@ def send_boleto_mail(boleto: Dict[str, int | str]):
     session.commit()
 
     session.close()
+
+  BoletoService.send_boleto_email(boleto, file, update_boleto_processed)
