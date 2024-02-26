@@ -71,6 +71,7 @@ $ make backend-test
 
 # TODO
  - Tests Coverage 90%+
+ - Front Tests (Unfortunately cannot be done with Bun yet :sob: [https://github.com/oven-sh/bun/issues/198](https://github.com/oven-sh/bun/issues/198))
  - E2E Tests
  - Front Docs
  - Move some code outside from component
