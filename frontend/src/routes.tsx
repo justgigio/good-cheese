@@ -22,15 +22,15 @@ const router = createBrowserRouter([
         children: [
           {
             path: "",
-            element: <ListBoletos />
+            element: <ListBoletos />,
           },
           {
             path: "upload",
-            element: <UploadBoleto /> 
-          }
-        ]
+            element: <UploadBoleto />,
+          },
+        ],
       },
-    ]
+    ],
   },
 ]);
 

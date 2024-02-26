@@ -1,15 +1,10 @@
-
 import { FileActionType, FileStatus, UploadedFile } from "@/types";
 import { useFileContext } from "./file";
 import { ChangeEvent, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-type FileUploaderProps = {
-  file: File;
-}
 const FileUploader = () => {
-
   const context = useFileContext();
 
   const file = context.state.file;
@@ -24,18 +19,18 @@ const FileUploader = () => {
       const payload = { file };
       context.dispatch({ type: FileActionType.INPUT_CHANGE, payload });
     }
-  }
+  };
 
   // TODO: Move requests outside component
   const handleSubmit = () => {
     if (file) {
-      const url = 'http://localhost:8000/boletos/upload';
+      const url = "http://localhost:8000/boletos/upload";
       const formData = new FormData();
-      formData.append('file', file);
-      formData.append('fileName', file.name);
+      formData.append("file", file);
+      formData.append("fileName", file.name);
       const config = {
         headers: {
-          'content-type': 'multipart/form-data',
+          "content-type": "multipart/form-data",
         },
       };
 
@@ -44,28 +39,31 @@ const FileUploader = () => {
         checkUpload(response.data);
       });
     }
-  }
+  };
 
   // TODO: Move requests outside component
   const checkUpload = (file: UploadedFile) => {
     const url = `http://localhost:8000/boletos/upload/${file.id}`;
-    axios.get<FileStatus>(url).then((response) => {
-      const status = response.data;
-      
-      setLoadingPercentage(status.percent);
-      if (status.completed) {
-        const payload = {uploadedFile: file}
-        context.dispatch({ type: FileActionType.UPLOAD_FINISHED, payload });
-        navigate("/boletos", { replace: true });
-      } else {
-        setTimeout(() => checkUpload(file), 500);
-      }
-    }).catch(() => {
-      context.dispatch({ type: FileActionType.UPLOAD_ERROR });
-    });
-  }
+    axios
+      .get<FileStatus>(url)
+      .then((response) => {
+        const status = response.data;
 
-  const humanByteSize = (bytesize: number) : string => {
+        setLoadingPercentage(status.percent);
+        if (status.completed) {
+          const payload = { uploadedFile: file };
+          context.dispatch({ type: FileActionType.UPLOAD_FINISHED, payload });
+          navigate("/boletos", { replace: true });
+        } else {
+          setTimeout(() => checkUpload(file), 500);
+        }
+      })
+      .catch(() => {
+        context.dispatch({ type: FileActionType.UPLOAD_ERROR });
+      });
+  };
+
+  const humanByteSize = (bytesize: number): string => {
     if (bytesize > 1024 * 1024) {
       return `${(bytesize / (1024 * 1024)).toFixed(2)} MB`;
     }
@@ -75,10 +73,10 @@ const FileUploader = () => {
     }
 
     return `${bytesize} bytes`;
-  } 
+  };
 
   return (
-    <div className = "flex flex-col gap-6 w-full">
+    <div className="flex flex-col gap-6 w-full">
       {!isLoading && (
         <div>
           <label htmlFor="file" className="sr-only">
@@ -114,7 +112,7 @@ const FileUploader = () => {
           <p className="pb-6">Uploading...</p>
           <div className="w-full h-2 bg-green-800 rounded-full">
             <div
-              style={{width: `${loadingPercentage}%`}}
+              style={{ width: `${loadingPercentage}%` }}
               className="h-full text-center text-xs text-white bg-green-600 rounded-full transition-all"
             ></div>
           </div>

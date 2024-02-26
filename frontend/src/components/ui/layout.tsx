@@ -9,7 +9,7 @@ function Layout(): ReactElement {
         <header className="w-full h-20 text-center justify-center align-middle flex">
           <I18n />
           <h1 className="text-4xl text-green-700 leading-loose">
-            <Link to={"/"} className="inline-block h-full" >
+            <Link to={"/"} className="inline-block h-full">
               Fullstack Kanastra's Challenge
             </Link>
           </h1>

@@ -2,22 +2,23 @@ export default {
   translations: {
     links: {
       main: {
-        back: "< Back"
+        back: "< Back",
       },
       boletos: {
         list: "Boletos",
-        upload: "Upload New Boleto"
-      }
+        upload: "Upload New Boleto",
+      },
     },
     home: {
-      message: "Hello! Welcome to challenge exercise! Click on button below (Boletos) to access the challenge pages"
+      message:
+        "Hello! Welcome to challenge exercise! Click on button below (Boletos) to access the challenge pages",
     },
     boletos: {
       main: {
-        title: "Manage Boletos"
+        title: "Manage Boletos",
       },
       upload: {
-        title: "Upload New Boleto File"
+        title: "Upload New Boleto File",
       },
       list: {
         title: "Uploaded Boletos",
@@ -27,9 +28,9 @@ export default {
           name: "File Name",
           size: "Nº Lines",
           uploaded_at: "Uploaded at",
-          processed_at: "Processed at"
-        }
-      }
-    }
-  }
+          processed_at: "Processed at",
+        },
+      },
+    },
+  },
 };

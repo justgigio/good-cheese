@@ -1,4 +1,3 @@
-
 # Backend Tasks
 
 .PHONY: backend-code-style
@@ -45,3 +44,41 @@ backend-test: backend-check
 
 
 # Frontend Tasks
+
+.PHONY: frontend-lint
+frontend-lint:
+	docker-compose run --rm app bun run lint
+
+.PHONY: frontend-lint-fix
+frontend-lint-fix:
+	docker-compose run --rm app bun run lint --fix
+
+.PHONY: frontend-test-unit
+frontend-test-unit:
+  docker-compose run --rm app bun run test^:unit
+
+.PHONY: frontend-test-e2e
+frontend-test-e2e:
+  docker-compose run --rm app bun run test^:e2e
+
+.PHONY: frontend-test
+frontend-test: frontend-test-unit frontend-test-e2e
+
+.PHONY: frontend-type-check
+frontend-type-check:
+	docker-compose run --rm app bun run type-check
+
+.PHONY: frontend-prettier
+frontend-prettier:
+	docker-compose run --rm app bun run prettier
+
+.PHONY: frontend-format
+frontend-format: frontend-lint-fix frontend-prettier
+
+
+# Global
+.PHONY: test
+test: backend-test frontend-test
+
+.PHONY: format
+format: backend-format frontend-format

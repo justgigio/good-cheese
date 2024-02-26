@@ -58,8 +58,26 @@ You can check some movement in celery container log. You can also check the e-ma
 
 >*Note:* The boleto generator is only a mock with 0.1s sleep to simulate a call for an external API.
 
+# Testing
+
+Just run
+
+```
+$ make test
+```
+
+To run front or back separatedely, you can run:
+```
+$ make frontend-test
+```
+Or
+```
+$ make backend-test
+```
+
 # TODO
- - Tests
+ - Tests Coverage 90%+
+ - E2E Tests
  - Front Docs
  - Move some code outside from component
  - Some data validation

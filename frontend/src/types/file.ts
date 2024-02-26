@@ -6,7 +6,7 @@ export enum FileActionType {
   UPLOAD_FINISHED = "UPLOAD_FINISHED",
   UPLOAD_ERROR = "UPLOAD_ERROR",
   FETCH_STARTED = "FETCH_STARTED",
-  FETCH_FINISHED = "FETCH_FINISHED"
+  FETCH_FINISHED = "FETCH_FINISHED",
 }
 
 type ReducerAction<T, P> = {
@@ -21,10 +21,7 @@ type FileContextState = {
   uploadedFile: UploadedFile | null;
 };
 
-type FileAction = ReducerAction<
-  FileActionType,
-  Partial<FileContextState>
->;
+type FileAction = ReducerAction<FileActionType, Partial<FileContextState>>;
 
 type FileDispatch = ({ type, payload }: FileAction) => void;
 
@@ -36,21 +33,21 @@ type FileContextType = {
 type FileProviderProps = { children: ReactNode };
 
 type FileStatus = {
-  id: number
-  size: number
-  inserted: number
-  completed: boolean
-  percent: number
-}
+  id: number;
+  size: number;
+  inserted: number;
+  completed: boolean;
+  percent: number;
+};
 
 type UploadedFile = {
-  id: number
-  name: string
-  checksum: string
-  size: number
-  uploaded_at: Date
-  processed_at: Date
-}
+  id: number;
+  name: string;
+  checksum: string;
+  size: number;
+  uploaded_at: Date;
+  processed_at: Date;
+};
 
 export type {
   FileContextState,
@@ -60,4 +57,4 @@ export type {
   FileProviderProps,
   FileStatus,
   UploadedFile,
-}
+};
