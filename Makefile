@@ -4,13 +4,32 @@
 backend-code-style:
 	docker-compose run --rm api poetry run pycodestyle --statistics --ignore=E501,W503,E902,E711,E203 --count src
 
-.PHONY: backend-setup
-backend-setup:
+.PHONY: backend-deps-install
+backend-deps-install:
 	docker-compose run --rm api poetry install
+
+.PHONY: backend-db-setup
+backend-db-setup:
+	docker-compose run --rm api poetry run python db_setup.py
+
+.PHONY: backend-test-db-setup
+backend-test-db-setup:
+	docker-compose run --rm -e ENVIRONMENT=test api poetry run python db_setup.py
+
+.PHONY: backend-db-migrate
+backend-db-migrate:
+	docker-compose run --rm api poetry run alembic upgrade head
+
+.PHONY: backend-test-db-migrate
+backend-test-db-migrate:
+	docker-compose run --rm -e ENVIRONMENT=test api poetry run alembic upgrade head
+
+.PHONY: backend-setup
+backend-setup: backend-deps-install backend-db-setup backend-test-db-setup backend-db-migrate backend-test-db-migrate
 
 .PHONY: backend-test-only
 backend-test-only:
-	docker-compose run --rm api poetry run py.test tests --no-cov
+	docker-compose run --rm -e ENVIRONMENT=test api poetry run py.test tests --no-cov
 
 .PHONY: backend-mypy
 backend-mypy:
@@ -40,10 +59,17 @@ backend-format: backend-isort backend-black
 
 .PHONY: backend-test
 backend-test: backend-check
-	docker-compose run --rm api poetry run py.test tests --cov=. --cov-report xml --cov-report term --cov-report html --cov-fail-under=90
+	docker-compose run --rm -e ENVIRONMENT=test api poetry run py.test tests --cov=. --cov-report xml --cov-report term --cov-report html --cov-fail-under=90
 
 
 # Frontend Tasks
+
+.PHONY: frontend-deps-install
+frontend-deps-install:
+	docker-compose run --rm app bun install --frozen-lockfile
+
+.PHONY: frontend-setup
+frontend-setup: frontend-deps-install
 
 .PHONY: frontend-lint
 frontend-lint:
@@ -55,11 +81,11 @@ frontend-lint-fix:
 
 .PHONY: frontend-test-unit
 frontend-test-unit:
-  docker-compose run --rm app bun run test^:unit
+	docker-compose run --rm app bun run test:unit
 
 .PHONY: frontend-test-e2e
 frontend-test-e2e:
-  docker-compose run --rm app bun run test^:e2e
+	docker-compose run --rm app bun run test:e2e
 
 .PHONY: frontend-test
 frontend-test: frontend-test-unit frontend-test-e2e

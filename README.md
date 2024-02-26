@@ -15,19 +15,13 @@ $ docker-compose build
 Install frontend deps
 
 ```
-$ docker-compose run --rm app bun install --frozen-lockfile
+$ make frontend-setup
 ```
 
 Run backend setup:
 
 ```
-$ docker-compose run --rm api poetry run python db_setup.py
-```
-
-Run database migrations:
-
-```
-$ docker-compose run --rm api poetry run alembic upgrade head
+$ make backend-setup
 ```
 
 Run project:
@@ -40,7 +34,7 @@ The App should be available at [http://localhost:8888](http://localhost:8888)
 
 The API doc should be available at [http://localhost:8000/docs](http://localhost:8000/docs)
 
-- Processing a ~100MB file in less than 60 seconds :white_check_mark: (Actually around 17s)
+- Processing a `~100MB` file with `1,100,000` lines in less than 60 seconds :white_check_mark: (Actually around 5s !!! :fire:)
 
 # Sending boleto e-mails
 

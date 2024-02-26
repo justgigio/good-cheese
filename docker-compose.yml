@@ -6,7 +6,7 @@ services:
       - good_cheese_postgresql:/var/lib/postgresql/data
     ports:
       - "5432:5432"
-    command: postgres -d 5
+    command: postgres -d 4
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
